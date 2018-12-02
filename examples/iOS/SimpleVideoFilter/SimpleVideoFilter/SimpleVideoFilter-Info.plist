@@ -47,5 +47,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Monkey uses your camera to start video calls with new people, send clips to new friends, and more.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Monkey uses your microphone to start video calls with new people, and more.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Monkey uses your photo library to save images you take in the app.</string>
 </dict>
 </plist>
