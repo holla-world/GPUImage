@@ -279,6 +279,10 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
         if (audioInputReadyCallback == NULL)
         {
             [assetWriter startWriting];
+			if (_delegate && [_delegate respondsToSelector:@selector(movieRecordingDidStart)])
+			{
+				[_delegate movieRecordingDidStart];
+			}
         }
     });
     isRecording = YES;
