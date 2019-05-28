@@ -25,6 +25,7 @@
 }
 
 @property (assign, nonatomic) NSUInteger aspectRatio;
+@property (assign, nonatomic) CGSize currentSize;
 
 // Initialization and teardown
 - (void)commonInit;
@@ -132,15 +133,17 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    
+
+	CGSize currentViewSize = self.bounds.size;
+	self.currentSize = currentViewSize;
     // The frame buffer needs to be trashed and re-created when the view size changes.
-    if (!CGSizeEqualToSize(self.bounds.size, boundsSizeAtFrameBufferEpoch) &&
-        !CGSizeEqualToSize(self.bounds.size, CGSizeZero)) {
+    if (!CGSizeEqualToSize(currentViewSize, boundsSizeAtFrameBufferEpoch) &&
+        !CGSizeEqualToSize(currentViewSize, CGSizeZero)) {
         runSynchronouslyOnVideoProcessingQueue(^{
             [self destroyDisplayFramebuffer];
             [self createDisplayFramebuffer];
         });
-    } else if (!CGSizeEqualToSize(self.bounds.size, CGSizeZero)) {
+    } else if (!CGSizeEqualToSize(currentViewSize, CGSizeZero)) {
         [self recalculateViewGeometry];
     }
 }
@@ -234,14 +237,12 @@
 {
     runSynchronouslyOnVideoProcessingQueue(^{
         CGFloat heightScaling, widthScaling;
-        
-        CGSize currentViewSize = self.bounds.size;
-        
+		CGSize currentViewSize = self.currentSize;
         //    CGFloat imageAspectRatio = inputImageSize.width / inputImageSize.height;
         //    CGFloat viewAspectRatio = currentViewSize.width / currentViewSize.height;
-        
-        CGRect insetRect = AVMakeRectWithAspectRatioInsideRect(inputImageSize, self.bounds);
-        
+		CGRect bounds = CGRectMake(0, 0, currentViewSize.width, currentViewSize.height);
+        CGRect insetRect = AVMakeRectWithAspectRatioInsideRect(inputImageSize, bounds);
+
         switch(_fillMode)
         {
             case kGPUImageFillModeStretch:
