@@ -20,12 +20,12 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 #pragma mark -
 #pragma mark Private methods and instance variables
 
-@interface GPUImageVideoCamera () 
+@interface GPUImageVideoCamera ()
 {
-	AVCaptureDeviceInput *audioInput;
-	AVCaptureAudioDataOutput *audioOutput;
+    AVCaptureDeviceInput *audioInput;
+    AVCaptureAudioDataOutput *audioOutput;
     NSDate *startingCaptureTime;
-	
+    
     dispatch_queue_t cameraProcessingQueue, audioProcessingQueue;
     
     GLProgram *yuvConversionProgram;
@@ -64,25 +64,25 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 {
     if (!(self = [self initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack]))
     {
-		return nil;
+        return nil;
     }
     
     return self;
 }
 
-- (id)initWithSessionPreset:(NSString *)sessionPreset cameraPosition:(AVCaptureDevicePosition)cameraPosition; 
+- (id)initWithSessionPreset:(NSString *)sessionPreset cameraPosition:(AVCaptureDevicePosition)cameraPosition;
 {
-	if (!(self = [super init]))
+    if (!(self = [super init]))
     {
-		return nil;
+        return nil;
     }
     
     cameraProcessingQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH,0);
-	audioProcessingQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW,0);
+    audioProcessingQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW,0);
 
     frameRenderingSemaphore = dispatch_semaphore_create(1);
 
-	_frameRate = 0; // This will not set frame rate unless this value gets set to 1 or above
+    _frameRate = 0; // This will not set frame rate unless this value gets set to 1 or above
     _runBenchmark = NO;
     capturePaused = NO;
     outputRotation = kGPUImageNoRotation;
@@ -90,37 +90,37 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
     captureAsYUV = YES;
     _preferredConversion = kColorConversion709;
     
-	// Grab the back-facing or front-facing camera
+    // Grab the back-facing or front-facing camera
     _inputCamera = nil;
-	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-	for (AVCaptureDevice *device in devices) 
-	{
-		if ([device position] == cameraPosition)
-		{
-			_inputCamera = device;
-		}
-	}
+    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    for (AVCaptureDevice *device in devices)
+    {
+        if ([device position] == cameraPosition)
+        {
+            _inputCamera = device;
+        }
+    }
     
     if (!_inputCamera) {
         return nil;
     }
     
-	// Create the capture session
-	_captureSession = [[AVCaptureSession alloc] init];
-	
+    // Create the capture session
+    _captureSession = [[AVCaptureSession alloc] init];
+    
     [_captureSession beginConfiguration];
     
-	// Add the video input	
-	NSError *error = nil;
-	videoInput = [[AVCaptureDeviceInput alloc] initWithDevice:_inputCamera error:&error];
-	if ([_captureSession canAddInput:videoInput]) 
-	{
-		[_captureSession addInput:videoInput];
-	}
-	
-	// Add the video frame output	
-	videoOutput = [[AVCaptureVideoDataOutput alloc] init];
-	[videoOutput setAlwaysDiscardsLateVideoFrames:NO];
+    // Add the video input
+    NSError *error = nil;
+    videoInput = [[AVCaptureDeviceInput alloc] initWithDevice:_inputCamera error:&error];
+    if ([_captureSession canAddInput:videoInput])
+    {
+        [_captureSession addInput:videoInput];
+    }
+    
+    // Add the video frame output
+    videoOutput = [[AVCaptureVideoDataOutput alloc] init];
+    [videoOutput setAlwaysDiscardsLateVideoFrames:NO];
     
 //    if (captureAsYUV && [GPUImageContext deviceSupportsRedTextures])
     if (captureAsYUV && [GPUImageContext supportsFastTextureUpload])
@@ -205,22 +205,22 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
     });
     
     [videoOutput setSampleBufferDelegate:self queue:cameraProcessingQueue];
-	if ([_captureSession canAddOutput:videoOutput])
-	{
-		[_captureSession addOutput:videoOutput];
-	}
-	else
-	{
-		NSLog(@"Couldn't add video output");
+    if ([_captureSession canAddOutput:videoOutput])
+    {
+        [_captureSession addOutput:videoOutput];
+    }
+    else
+    {
+        NSLog(@"Couldn't add video output");
         return nil;
-	}
+    }
     
-	_captureSessionPreset = sessionPreset;
+    _captureSessionPreset = sessionPreset;
     [_captureSession setSessionPreset:_captureSessionPreset];
 
 // This will let you get 60 FPS video from the 720p preset on an iPhone 4S, but only that device and that preset
 //    AVCaptureConnection *conn = [videoOutput connectionWithMediaType:AVMediaTypeVideo];
-//    
+//
 //    if (conn.supportsVideoMinFrameDuration)
 //        conn.videoMinFrameDuration = CMTimeMake(1,60);
 //    if (conn.supportsVideoMaxFrameDuration)
@@ -228,7 +228,7 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
     
     [_captureSession commitConfiguration];
     
-	return self;
+    return self;
 }
 
 - (GPUImageFramebuffer *)framebufferForOutput;
@@ -236,7 +236,7 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
     return outputFramebuffer;
 }
 
-- (void)dealloc 
+- (void)dealloc
 {
     [self stopCameraCapture];
     [videoOutput setSampleBufferDelegate:nil queue:dispatch_get_main_queue()];
@@ -338,10 +338,10 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 - (void)startCameraCapture;
 {
     if (![_captureSession isRunning])
-	{
+    {
         startingCaptureTime = [NSDate date];
-		[_captureSession startRunning];
-	};
+        [_captureSession startRunning];
+    };
 }
 
 - (void)stopCameraCapture;
@@ -364,9 +364,9 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 
 - (void)rotateCamera
 {
-	if (self.frontFacingCameraPresent == NO)
-		return;
-	
+    if (self.frontFacingCameraPresent == NO)
+        return;
+    
     NSError *error;
     AVCaptureDeviceInput *newVideoInput;
     AVCaptureDevicePosition currentCameraPosition = [[videoInput device] position];
@@ -382,13 +382,13 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
     
     AVCaptureDevice *backFacingCamera = nil;
     NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-	for (AVCaptureDevice *device in devices) 
-	{
-		if ([device position] == currentCameraPosition)
-		{
-			backFacingCamera = device;
-		}
-	}
+    for (AVCaptureDevice *device in devices)
+    {
+        if ([device position] == currentCameraPosition)
+        {
+            backFacingCamera = device;
+        }
+    }
     newVideoInput = [[AVCaptureDeviceInput alloc] initWithDevice:backFacingCamera error:&error];
     
     if (newVideoInput != nil)
@@ -411,24 +411,39 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
     
     _inputCamera = backFacingCamera;
     [self setOutputImageOrientation:_outputImageOrientation];
+    
+    [self resetVideoCaptureConnectionOrientation];
 }
 
-- (AVCaptureDevicePosition)cameraPosition 
+- (void)resetVideoCaptureConnectionOrientation {
+    if (self.videoCaptureConnection.supportsVideoOrientation && self.videoCaptureConnection.videoOrientation != AVCaptureVideoOrientationPortrait) {
+        self.videoCaptureConnection.videoOrientation = AVCaptureVideoOrientationPortrait;
+    }
+    if (self.videoCaptureConnection.supportsVideoMirroring) {
+        if ([self cameraPosition] == AVCaptureDevicePositionFront && !self.videoCaptureConnection.videoMirrored) {
+            self.videoCaptureConnection.videoMirrored = true;
+        } else if ([self cameraPosition] == AVCaptureDevicePositionBack && self.videoCaptureConnection.videoMirrored){
+            self.videoCaptureConnection.videoMirrored = false;
+        }
+    }
+}
+
+- (AVCaptureDevicePosition)cameraPosition
 {
     return [[videoInput device] position];
 }
 
 + (BOOL)isBackFacingCameraPresent;
 {
-	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-	
-	for (AVCaptureDevice *device in devices)
-	{
-		if ([device position] == AVCaptureDevicePositionBack)
-			return YES;
-	}
-	
-	return NO;
+    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    
+    for (AVCaptureDevice *device in devices)
+    {
+        if ([device position] == AVCaptureDevicePositionBack)
+            return YES;
+    }
+    
+    return NO;
 }
 
 - (BOOL)isBackFacingCameraPresent
@@ -438,15 +453,15 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 
 + (BOOL)isFrontFacingCameraPresent;
 {
-	NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-	
-	for (AVCaptureDevice *device in devices)
-	{
-		if ([device position] == AVCaptureDevicePositionFront)
-			return YES;
-	}
-	
-	return NO;
+    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    
+    for (AVCaptureDevice *device in devices)
+    {
+        if ([device position] == AVCaptureDevicePositionFront)
+            return YES;
+    }
+    
+    return NO;
 }
 
 - (BOOL)isFrontFacingCameraPresent
@@ -456,21 +471,21 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 
 - (void)setCaptureSessionPreset:(NSString *)captureSessionPreset;
 {
-	[_captureSession beginConfiguration];
-	
-	_captureSessionPreset = captureSessionPreset;
-	[_captureSession setSessionPreset:_captureSessionPreset];
-	
-	[_captureSession commitConfiguration];
+    [_captureSession beginConfiguration];
+    
+    _captureSessionPreset = captureSessionPreset;
+    [_captureSession setSessionPreset:_captureSessionPreset];
+    
+    [_captureSession commitConfiguration];
 }
 
 - (void)setFrameRate:(int32_t)frameRate;
 {
-	_frameRate = frameRate;
-	
-	if (_frameRate > 0)
-	{
-		if ([_inputCamera respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
+    _frameRate = frameRate;
+    
+    if (_frameRate > 0)
+    {
+        if ([_inputCamera respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
             [_inputCamera respondsToSelector:@selector(setActiveVideoMaxFrameDuration:)]) {
             
             NSError *error;
@@ -498,10 +513,10 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
             }
         }
         
-	}
-	else
-	{
-		if ([_inputCamera respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
+    }
+    else
+    {
+        if ([_inputCamera respondsToSelector:@selector(setActiveVideoMinFrameDuration:)] &&
             [_inputCamera respondsToSelector:@selector(setActiveVideoMaxFrameDuration:)]) {
             
             NSError *error;
@@ -529,22 +544,22 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
             }
         }
         
-	}
+    }
 }
 
 - (int32_t)frameRate;
 {
-	return _frameRate;
+    return _frameRate;
 }
 
 - (AVCaptureConnection *)videoCaptureConnection {
     for (AVCaptureConnection *connection in [videoOutput connections] ) {
-		for ( AVCaptureInputPort *port in [connection inputPorts] ) {
-			if ( [[port mediaType] isEqual:AVMediaTypeVideo] ) {
-				return connection;
-			}
-		}
-	}
+        for ( AVCaptureInputPort *port in [connection inputPorts] ) {
+            if ( [[port mediaType] isEqual:AVMediaTypeVideo] ) {
+                return connection;
+            }
+        }
+    }
     
     return nil;
 }
@@ -648,7 +663,7 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
         }
     }
 
-	CMTime currentTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+    CMTime currentTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
 
     [GPUImageContext useImageProcessingContext];
 
@@ -735,15 +750,15 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
             // TODO: Mesh this with the output framebuffer structure
             
 //            CVPixelBufferLockBaseAddress(cameraFrame, 0);
-//            
+//
 //            CVReturn err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault, [[GPUImageContext sharedImageProcessingContext] coreVideoTextureCache], cameraFrame, NULL, GL_TEXTURE_2D, GL_RGBA, bufferWidth, bufferHeight, GL_BGRA, GL_UNSIGNED_BYTE, 0, &texture);
-//            
+//
 //            if (!texture || err) {
 //                NSLog(@"Camera CVOpenGLESTextureCacheCreateTextureFromImage failed (error: %d)", err);
 //                NSAssert(NO, @"Camera failure");
 //                return;
 //            }
-//            
+//
 //            outputTexture = CVOpenGLESTextureGetName(texture);
 //            //        glBindTexture(CVOpenGLESTextureGetTarget(texture), outputTexture);
 //            glBindTexture(GL_TEXTURE_2D, outputTexture);
@@ -751,7 +766,7 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 //            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 //            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 //            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//            
+//
 //            [self updateTargetsForVideoCameraUsingCacheTextureAtWidth:bufferWidth height:bufferHeight time:currentTime];
 //
 //            CVPixelBufferUnlockBaseAddress(cameraFrame, 0);
@@ -802,12 +817,12 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
                 totalFrameTimeDuringCapture += currentFrameTime;
             }
         }
-    }  
+    }
 }
 
 - (void)processAudioSampleBuffer:(CMSampleBufferRef)sampleBuffer;
 {
-    [self.audioEncodingTarget processAudioBuffer:sampleBuffer]; 
+    [self.audioEncodingTarget processAudioBuffer:sampleBuffer];
 }
 
 - (void)convertYUVToRGBOutput;
@@ -835,18 +850,18 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
         1.0f,  1.0f,
     };
     
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, luminanceTexture);
-	glUniform1i(yuvConversionLuminanceTextureUniform, 4);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, luminanceTexture);
+    glUniform1i(yuvConversionLuminanceTextureUniform, 4);
 
     glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, chrominanceTexture);
-	glUniform1i(yuvConversionChrominanceTextureUniform, 5);
+    glBindTexture(GL_TEXTURE_2D, chrominanceTexture);
+    glUniform1i(yuvConversionChrominanceTextureUniform, 5);
 
     glUniformMatrix3fv(yuvConversionMatrixUniform, 1, GL_FALSE, _preferredConversion);
 
     glVertexAttribPointer(yuvConversionPositionAttribute, 2, GL_FLOAT, 0, 0, squareVertices);
-	glVertexAttribPointer(yuvConversionTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, [GPUImageFilter textureCoordinatesForRotation:internalRotation]);
+    glVertexAttribPointer(yuvConversionTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, [GPUImageFilter textureCoordinatesForRotation:internalRotation]);
     
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
@@ -1045,6 +1060,7 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 {
     _outputImageOrientation = newValue;
     [self updateOrientationSendToTargets];
+    [self resetVideoCaptureConnectionOrientation];
 }
 
 - (void)setHorizontallyMirrorFrontFacingCamera:(BOOL)newValue
