@@ -225,9 +225,9 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 //        conn.videoMinFrameDuration = CMTimeMake(1,60);
 //    if (conn.supportsVideoMaxFrameDuration)
 //        conn.videoMaxFrameDuration = CMTimeMake(1,60);
-    
+    [self resetVideoCaptureConnectionOrientation];
     [_captureSession commitConfiguration];
-    
+
     return self;
 }
 
@@ -405,15 +405,23 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
         {
             [_captureSession addInput:videoInput];
         }
+
+        if (videoOutput != nil)
+        {
+            [_captureSession removeOutput:videoOutput];
+            if ([_captureSession canAddOutput:videoOutput])
+            {
+                [_captureSession addOutput:videoOutput];
+                [self resetVideoCaptureConnectionOrientation];
+            }
+        }
         //captureSession.sessionPreset = oriPreset;
         [_captureSession commitConfiguration];
     }
-    
+
     _inputCamera = backFacingCamera;
     [self setOutputImageOrientation:_outputImageOrientation];
-    
-    [self resetVideoCaptureConnectionOrientation];
-}
+    }
 
 - (void)resetVideoCaptureConnectionOrientation {
     if (self.videoCaptureConnection.supportsVideoOrientation && self.videoCaptureConnection.videoOrientation != AVCaptureVideoOrientationPortrait) {
@@ -1060,7 +1068,6 @@ void setColorConversion709( GLfloat conversionMatrix[9] )
 {
     _outputImageOrientation = newValue;
     [self updateOrientationSendToTargets];
-    [self resetVideoCaptureConnectionOrientation];
 }
 
 - (void)setHorizontallyMirrorFrontFacingCamera:(BOOL)newValue
